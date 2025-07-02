@@ -8,19 +8,21 @@ api = Api(app)
 
 CORS(app)
 
-# normal flask route
-@app.route('/')
-def index():
-    if request.method == "GET":
-        return {"message": "hello user!"}
+# connecting database
+from models import db
 
-# flask-restful
-class HelloWorld(Resource):
-    def get(self):
-        return {"message": "hello user!"}
-    
-api.add_resource(HelloWorld, '/flaskrestful')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app_database.db'
+db.init_app(app)
+
+# connecting api resources to endpoints
+from controllers import UsersResource
+
+api.add_resource(UsersResource, '/users', '/users/<user_id>')
+
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+        app.run(debug=True)
