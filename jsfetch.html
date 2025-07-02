@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Fetch Test</title>
+</head>
+<body>
+
+    <h1>Fetching all users in backend through api call via fetch function in JS</h1>
+
+    <div id="names"></div>
+
+    <script>
+        function fetchUsersFromBackend() {
+            fetch('http://127.0.0.1:5000/users')
+            .then(response => response.json())
+            .then(data => {
+                console.log("data received from backend: ",data)
+                let html_string = ''
+                for (let i = 0; i < data.users.length; i++) {
+                    const user = data.users[i];
+                    // console.log(`User Email: ${user.email}, Name: ${user.name}`);
+                    html_string += `<h2> <a href='/users/${user.id}'> ${user.name} </a> </h2>`
+                }
+                document.getElementById('names').innerHTML = html_string
+            })
+        }
+        fetchUsersFromBackend()
+    </script>
+
+</body>
+</html>
