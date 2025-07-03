@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 from flask_restful import Resource, Api
 
@@ -8,6 +9,10 @@ api = Api(app)
 
 CORS(app)
 
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret"
+jwt = JWTManager(app)
+
 # connecting database
 from models import db, User
 
@@ -15,8 +20,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app_database.db'
 db.init_app(app)
 
 # connecting api resources to endpoints
-from controllers import UserResource
+from controllers import UserResource, LoginResource
 
+api.add_resource(LoginResource, '/login')
 api.add_resource(UserResource, '/users', '/users/<user_id>')
 
 

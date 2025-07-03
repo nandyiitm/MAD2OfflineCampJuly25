@@ -1,10 +1,28 @@
 from flask_restful import Resource, Api
 from flask import request
 
+from flask_jwt_extended import create_access_token, jwt_required
+
 from models import db, User
 
+class LoginResource(Resource):
+    def post(self):
+        data = request.get_json()
+        email = data.get('email', None)
+        password = data.get('password', None)
+        if not email or not password:
+            return {'msg': "Please provide all required information!"}, 400
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return {'msg': "User doesn't exists!"}, 400
+        if user.password != password:
+            return {'message': "Invalid credentials"}, 400
+        token = create_access_token(identity=user.to_dict())
+        return {'message': "POST received for login", 'token': token}
+
 class UserResource(Resource):
-    
+
+    @jwt_required()
     def get(self, user_id=None):
         if user_id:
             user = User.query.get(user_id)
