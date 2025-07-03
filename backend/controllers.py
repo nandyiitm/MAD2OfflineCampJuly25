@@ -3,7 +3,7 @@ from flask import request
 
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from models import db, User
+from models import db, User, Quote
 
 class LoginResource(Resource):
     def post(self):
@@ -18,61 +18,85 @@ class LoginResource(Resource):
         if user.password != password:
             return {'message': "Invalid credentials"}, 400
         token = create_access_token(identity=user.email)
-        return {'message': "POST received for login", 'token': token}
-
-class UserResource(Resource):
-
-    @jwt_required()
-    def get(self, user_id=None):
-        print(get_jwt_identity())
-        if user_id:
-            user = User.query.get(user_id)
-            if user:
-                return {'msg': "user found", 'email': user.email, 'name': user.name}
-            return {'msg': "User not found!"}, 404
-        users = User.query.all()
-        users = [user.to_dict() for user in users]
-        return {"msg": "All users", "users": users}
+        return {'message': "Successfully Loggedin!", 'token': token}
     
-    @jwt_required()
+class RegisterResource(Resource):
     def post(self):
-        identity = get_jwt_identity()
-        user = User.query.filter_by(email=identity).first()
-        if user.role != 'admin':
-            return {'message': "You are not authorized!"}, 401
         data = request.get_json()
-        email = data.get('email', None)
         name = data.get('name', None)
-        if not email or not name:
+        email = data.get('email', None)
+        password = data.get('password', None)
+        if not email or not name or not password:
             return {'msg': "Please provide all required information!"}, 400
         user = User.query.get(email)
         if user:
             return {'msg': "User already exists!"}, 400
-        user = User(email=email, name=name)
+        user = User(email=email, name=name, password=password)
         db.session.add(user); db.session.commit()
-        return {'msg': "Successfully created user!"}
+        return {'msg': "Successfully Registered!"}, 200
+
+def is_admin():
+    identity = get_jwt_identity()
+    user = User.query.filter_by(email=identity).first()
+    if user.role != 'admin':
+        return False
+    return True
+
+class QuoteResource(Resource):
+
+    @jwt_required()
+    def get(self, quote_id=None):
+        if quote_id:
+            quote = Quote.query.get(quote_id)
+            if quote:
+                return {'msg': "quote found", 'quote': quote.to_dict()}
+            return {'msg': "Quote not found!"}, 404
+        quotes = Quote.query.all()
+        quotes = [quote.to_dict() for quote in quotes]
+        return {"msg": "All quotes", "quotes": quotes}
     
-    def put(self, user_id=None):
-        if not user_id:
-            return {'msg': "User id is required to update!"}, 400
-        user = User.query.get(user_id)
-        if not user:
-            return {'msg': "User not exists to update!"}, 404
+    @jwt_required()
+    def post(self, quote_id=None):
+        if not is_admin(): return {'message': 'Not authorized'}, 401
+
         data = request.get_json()
-        name = data.get('name', None)
-        if not name:
+        author = data.get('author', None)
+        author_image = data.get('author_image', None)
+        text = data.get('text', None)
+        if not author or not author_image or not text:
             return {'msg': "Please provide all required information!"}, 400
-        user.name = name
-        db.session.commit()
-        user = user.to_dict()
-        return {'msg': "User information updated!", 'user': user}, 200
+        quote = Quote(author=author, author_image=author_image, text=text)
+        db.session.add(quote); db.session.commit()
+        return {'msg': "Successfully created quote!", 'quote': quote.to_dict()}
     
-    def delete(self, user_id=None):
-        if not user_id:
-            return {'msg': "User id is required to delete!"}, 400
-        user = User.query.get(user_id)
-        if not user:
-            return {'msg': "User not exists to delete!"}, 404
-        db.session.delete(user)
+    @jwt_required()
+    def put(self, quote_id=None):
+        if not is_admin(): return {'message': 'Not authorized'}, 401
+
+        if not quote_id:
+            return {'msg': "Quote id is required to update!"}, 400
+        quote = Quote.query.get(quote_id)
+        if not quote:
+            return {'msg': "Quote not exists to update!"}, 404
+        data = request.get_json()
+        author = data.get('author', None)
+        author_image = data.get('author_image', None)
+        text = data.get('text', None)
+        if not author or not author_image or not text:
+            return {'msg': "Please provide all required information!"}, 400
+        quote.author = author; quote.author_image = author_image; quote.text = text
         db.session.commit()
-        return {'msg': "User has been delete!"}, 200
+        return {'msg': "Quote information updated!", 'quote': quote.to_dict()}, 200
+    
+    @jwt_required()
+    def delete(self, quote_id=None):
+        if not is_admin(): return {'message': 'Not authorized'}, 401
+
+        if not quote_id:
+            return {'msg': "Quote id is required to delete!"}, 400
+        quote = Quote.query.get(quote_id)
+        if not quote:
+            return {'msg': "Quote not exists to delete!"}, 404
+        db.session.delete(quote)
+        db.session.commit()
+        return {'msg': "Quote has been delete!"}, 200

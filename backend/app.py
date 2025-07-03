@@ -20,10 +20,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app_database.db'
 db.init_app(app)
 
 # connecting api resources to endpoints
-from controllers import UserResource, LoginResource
+from controllers import QuoteResource, LoginResource
 
 api.add_resource(LoginResource, '/login')
-api.add_resource(UserResource, '/users', '/users/<user_id>')
+api.add_resource(QuoteResource, '/quotes', '/quotes/<quote_id>')
 
 
 
@@ -31,16 +31,6 @@ api.add_resource(UserResource, '/users', '/users/<user_id>')
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-
-        # users = {
-        #     User(email='user0@mad2.com', name='User0', password='12345678'),
-        #     User(email='user1@mad2.com', name='User1', password='12345678'),
-        #     User(email='user2@mad2.com', name='User2', password='12345678'),
-        #     User(email='user3@mad2.com', name='User3', password='12345678')
-        # }
-        # for user in users:
-        #     db.session.add(user)
-        # db.session.commit()
 
         admin = User.query.filter_by(email='admin@mad2.com').first()
         if not admin:
