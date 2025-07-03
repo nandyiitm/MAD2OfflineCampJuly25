@@ -1,7 +1,8 @@
 # MAD2 Offline Bootcamp - July 25
 
+---
+---
 ## Backend Setup
-
 ---
 
 ### Flask
@@ -55,7 +56,7 @@
 
 ### Mailhog
 
-
+---
 ---
 
 ## Frontend Setup
@@ -79,3 +80,5 @@
    ```
 
 ---
+
+Made by NandanReddyP
