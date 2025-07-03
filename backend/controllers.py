@@ -1,7 +1,7 @@
 from flask_restful import Resource, Api
 from flask import request
 
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 from models import db, User
 
@@ -17,13 +17,14 @@ class LoginResource(Resource):
             return {'msg': "User doesn't exists!"}, 400
         if user.password != password:
             return {'message': "Invalid credentials"}, 400
-        token = create_access_token(identity=user.to_dict())
+        token = create_access_token(identity=user.email)
         return {'message': "POST received for login", 'token': token}
 
 class UserResource(Resource):
 
     @jwt_required()
     def get(self, user_id=None):
+        print(get_jwt_identity())
         if user_id:
             user = User.query.get(user_id)
             if user:
@@ -33,7 +34,12 @@ class UserResource(Resource):
         users = [user.to_dict() for user in users]
         return {"msg": "All users", "users": users}
     
+    @jwt_required()
     def post(self):
+        identity = get_jwt_identity()
+        user = User.query.filter_by(email=identity).first()
+        if user.role != 'admin':
+            return {'message': "You are not authorized!"}, 401
         data = request.get_json()
         email = data.get('email', None)
         name = data.get('name', None)
