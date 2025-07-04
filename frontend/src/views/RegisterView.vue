@@ -63,6 +63,36 @@ export default {
     handleRegister() {
       // Replace with real registration logic
       console.log('Registering user:', this.name, this.email, this.password);
+
+      const postData = {'email': this.email, 'name': this.name, 'password': this.password}
+
+          fetch('http://127.0.0.1:5000/register', {
+              method: 'POST', // Specify the HTTP method
+              headers: {
+                'Content-Type': 'application/json' // Indicate JSON content
+              },
+              body: JSON.stringify(postData) // Convert JavaScript object to JSON string
+            })
+              .then(response => {
+                if (!response.ok) {
+                  if (response.status === 404) {
+                    alert('Account already exists, Please login to account!')
+                  }
+                  console.log(response.status)
+                }
+                alert('Account creted!, please login.')
+                return response.json();
+              })
+              .then(data => {
+                console.log('Response from POST:', data);
+
+              })
+              .catch(error => {
+                alert(error)
+                console.error('POST error:', error);
+              });
+
+
       // Example: this.$router.push('/login');
     }
   }

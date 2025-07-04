@@ -50,6 +50,40 @@ export default {
     handleLogin() {
       // Replace with real authentication logic
       console.log('Logging in with:', this.email, this.password);
+      const postData = {'email': this.email, 'password': this.password}
+
+          fetch('http://127.0.0.1:5000/login', {
+            method: 'POST', // Specify the HTTP method
+            headers: {
+              'Content-Type': 'application/json' // Indicate JSON content
+            },
+            body: JSON.stringify(postData) // Convert JavaScript object to JSON string
+          })
+            .then(response => {
+              if (!response.ok) {
+                if (response.status === 404) {
+                  alert('Account does not exists, create an account!')
+                }
+                console.log(response.status)
+              }
+              alert('Loggedin!')
+              return response.json();
+            })
+            .then(data => {
+              console.log('Response from POST:', data);
+              // alert(`Received token ${data.token}`)
+              localStorage.setItem('token', data.token) // storing the token in local storage
+              if (data.user.role === 'user') {
+                this.$router.push('/user')
+              } else {
+                this.$router.push('/admin')
+              }
+            })
+            .catch(error => {
+              alert(error)
+              console.error('POST error:', error);
+            });
+
       // Example: this.$router.push('/quotes');
     }
   }

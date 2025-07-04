@@ -14,11 +14,11 @@ class LoginResource(Resource):
             return {'msg': "Please provide all required information!"}, 400
         user = User.query.filter_by(email=email).first()
         if not user:
-            return {'msg': "User doesn't exists!"}, 400
+            return {'msg': "User doesn't exists!"}, 404
         if user.password != password:
             return {'message': "Invalid credentials"}, 400
         token = create_access_token(identity=user.email)
-        return {'message': "Successfully Loggedin!", 'token': token}
+        return {'message': "Successfully Loggedin!", 'token': token, 'user': user.to_dict()}
     
 class RegisterResource(Resource):
     def post(self):
@@ -28,15 +28,16 @@ class RegisterResource(Resource):
         password = data.get('password', None)
         if not email or not name or not password:
             return {'msg': "Please provide all required information!"}, 400
-        user = User.query.get(email)
+        user = User.query.filter_by(email=email).first()
         if user:
-            return {'msg': "User already exists!"}, 400
+            return {'msg': "User already exists!"}, 404
         user = User(email=email, name=name, password=password)
         db.session.add(user); db.session.commit()
         return {'msg': "Successfully Registered!"}, 200
 
 def is_admin():
     identity = get_jwt_identity()
+    print(identity)
     user = User.query.filter_by(email=identity).first()
     if user.role != 'admin':
         return False
@@ -57,6 +58,7 @@ class QuoteResource(Resource):
     
     @jwt_required()
     def post(self, quote_id=None):
+        print(get_jwt_identity())
         if not is_admin(): return {'message': 'Not authorized'}, 401
 
         data = request.get_json()

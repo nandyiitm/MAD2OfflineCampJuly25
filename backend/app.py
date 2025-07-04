@@ -20,9 +20,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app_database.db'
 db.init_app(app)
 
 # connecting api resources to endpoints
-from controllers import QuoteResource, LoginResource
+from controllers import QuoteResource, LoginResource, RegisterResource
 
 api.add_resource(LoginResource, '/login')
+api.add_resource(RegisterResource, '/register')
 api.add_resource(QuoteResource, '/quotes', '/quotes/<quote_id>')
 
 
