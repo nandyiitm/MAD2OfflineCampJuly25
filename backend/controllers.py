@@ -1,5 +1,8 @@
 from flask_restful import Resource, Api
 from flask import request
+from flask_caching import Cache
+
+cache = Cache()
 
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
@@ -43,10 +46,16 @@ def is_admin():
         return False
     return True
 
+import time
+
 class QuoteResource(Resource):
 
-    @jwt_required()
+    # @jwt_required()
+    @cache.cached(timeout=60)
     def get(self, quote_id=None):
+
+        time.sleep(10)
+        
         if quote_id:
             quote = Quote.query.get(quote_id)
             if quote:
@@ -92,6 +101,7 @@ class QuoteResource(Resource):
     
     @jwt_required()
     def delete(self, quote_id=None):
+
         if not is_admin(): return {'message': 'Not authorized'}, 401
 
         if not quote_id:

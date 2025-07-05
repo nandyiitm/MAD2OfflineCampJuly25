@@ -9,6 +9,7 @@ api = Api(app)
 
 CORS(app)
 
+
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "super-secret"
 jwt = JWTManager(app)
@@ -20,13 +21,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app_database.db'
 db.init_app(app)
 
 # connecting api resources to endpoints
-from controllers import QuoteResource, LoginResource, RegisterResource
+from controllers import QuoteResource, LoginResource, RegisterResource, cache
 
 api.add_resource(LoginResource, '/login')
 api.add_resource(RegisterResource, '/register')
 api.add_resource(QuoteResource, '/quotes', '/quotes/<quote_id>')
 
 
+# set the caching
+app.config["CACHE_TYPE"] = "RedisCache"
+app.config["CACHE_REDIS_URL"] = 'redis://localhost:6379/0'
+cache.init_app(app)
 
 
 if __name__ == "__main__":
