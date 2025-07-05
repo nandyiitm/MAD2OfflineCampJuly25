@@ -51,10 +51,10 @@ import time
 class QuoteResource(Resource):
 
     # @jwt_required()
-    @cache.cached(timeout=60)
+    @cache.cached(timeout=60, key_prefix='QuotesCache')
     def get(self, quote_id=None):
 
-        time.sleep(10)
+        time.sleep(60)
         
         if quote_id:
             quote = Quote.query.get(quote_id)
@@ -99,10 +99,11 @@ class QuoteResource(Resource):
         db.session.commit()
         return {'msg': "Quote information updated!", 'quote': quote.to_dict()}, 200
     
-    @jwt_required()
+    # @jwt_required()
     def delete(self, quote_id=None):
+        cache.delete('QuotesCache')
 
-        if not is_admin(): return {'message': 'Not authorized'}, 401
+        # if not is_admin(): return {'message': 'Not authorized'}, 401
 
         if not quote_id:
             return {'msg': "Quote id is required to delete!"}, 400
