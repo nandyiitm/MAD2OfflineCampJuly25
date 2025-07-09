@@ -113,3 +113,8 @@ class QuoteResource(Resource):
         db.session.delete(quote)
         db.session.commit()
         return {'msg': "Quote has been delete!"}, 200
+
+class GraphResource(Resource):
+
+    def get(self):
+        return {'msg': 'graph data', 'labels': ['B1','Block2', 'Shopping mall'], 'noOfReservations': [20, 30, 40], 'label': '# of reservations'}
